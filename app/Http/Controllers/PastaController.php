@@ -6,6 +6,7 @@ use App\Pasta;
 use Illuminate\Http\Request;
 
 class PastaController extends Controller {
+
     /**
      * Display a listing of the resource.
      *
@@ -32,9 +33,11 @@ class PastaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+        // Controllo i dati
+        $request->validate($this->getValidationRules());
+
         // Salva i dati nel database
         $data = $request->all();
-        
         $new_pasta = new Pasta();
         $new_pasta->fill($data);
         // $new_pasta->title = $data['title'];
@@ -67,7 +70,8 @@ class PastaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        //
+        $pasta_to_update = Pasta::findOrFail($id);
+        return view('pasta.edit', compact('pasta_to_update'));
     }
 
     /**
@@ -78,7 +82,23 @@ class PastaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
-        //
+        // Validazione dei dati
+        $request->validate($this->getValidationRules());
+
+        // Salvataggio dei dati
+        $data = $request->all();
+
+        $pasta = Pasta::findOrFail($id);
+
+        // $pasta->title = $data['title'];
+        // $pasta->type = $data['type'];
+        // //...
+        // $pasta->save();
+        
+        $pasta->update($data);
+
+        return redirect()->route('pasta.show', ['pastum' => $pasta->id]);
+        
     }
 
     /**
@@ -88,6 +108,23 @@ class PastaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        //
+        $pasta = Pasta::findOrFail($id);
+        $pasta->delete();
+        return redirect()->route('pasta.index');
+    }
+
+    /**
+     * Returns an array with validation rules
+     * @return Array
+     */
+    private function getValidationRules() {
+        return [
+            'title' => 'required|max:100|min:5',
+            'type' => 'required|max:50',
+            'image_src' => 'required',
+            'cook_time' => 'required|max:50',
+            'weight' => 'required|max:10',
+            'description' => 'required'
+        ];
     }
 }
